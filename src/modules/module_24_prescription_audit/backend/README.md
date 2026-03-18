@@ -290,45 +290,77 @@ Valid values: `pending` → `acknowledged` → `resolved`
 
 ## Frontend Integration
 
-### 1. Environment variable
-In your React project root, add to `.env`:
-```
-VITE_API_BASE_URL=http://localhost:5000/api
-```
-(Use `REACT_APP_API_BASE_URL` for Create React App.)
+The frontend for this module is a **Streamlit** application located at:
 
-### 2. Login and store token
-```js
-const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/login`, {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ email: 'priya@hospital.com', password: 'password123' }),
-});
-const { data } = await res.json();
-localStorage.setItem('token', data.token);  // also store data.role, data.name
+```
+src/modules/module_24_prescription_audit/frontend/
 ```
 
-### 3. Authenticated requests
-```js
-const token = localStorage.getItem('token');
+### Running both services
 
-const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/audits/`, {
-  headers: { Authorization: `Bearer ${token}` },
-});
-const { data } = await res.json();
-// data.audits — array of audit objects
+```bash
+# Terminal 1 — backend
+cd src/modules/module_24_prescription_audit/backend
+source myvenv/bin/activate
+python app.py
+# → http://localhost:5000
+
+# Terminal 2 — frontend (from repo root)
+cd /path/to/Frontend
+streamlit run app.py
+# → http://localhost:8501
 ```
 
-### 4. Run an audit from the UI
-```js
-// After creating a prescription, trigger its audit:
-await fetch(`${import.meta.env.VITE_API_BASE_URL}/audits/run/${prescriptionId}`, {
-  method: 'POST',
-  headers: { Authorization: `Bearer ${token}` },
-});
+### How the frontend calls this backend
+
+All HTTP calls go through `frontend/api_client.py`. It sends a `Bearer` token on every authenticated request and automatically unwraps the `{"success": true, "data": ...}` envelope:
+
+```python
+# Login — stores token in st.session_state.token
+data, status = api_client.login("priya@hospital.com", "password123")
+token = data["token"]   # data is already unwrapped from the "data" key
+
+# Authenticated list
+prescriptions, status = api_client.list_prescriptions()
+# prescriptions == {"prescriptions": [...], "total": N, ...}
+
+# Create + audit
+rx, _ = api_client.create_prescription({...})
+audit, _ = api_client.run_audit(rx["_id"])
 ```
 
-### 5. Field name reference for UI components
+### Response shape reference
+
+Some list endpoints return a **plain list** (not a dict with a named key). Always guard with `isinstance`:
+
+| Endpoint                              | `data` type after unwrap               |
+|---------------------------------------|----------------------------------------|
+| `GET /api/prescriptions/`             | `{"prescriptions": [...], "total": N}` |
+| `GET /api/audits/`                    | `{"audits": [...], "total": N}`        |
+| `GET /api/violations/`                | `{"violations": [...], "total": N}`    |
+| `GET /api/improvements/`             | `{"improvements": [...], "total": N}`  |
+| `GET /api/quality-metrics/`           | **list** of metric documents           |
+| `GET /api/quality-metrics/<id>/trend` | **list** of metric documents           |
+| `GET /api/guidelines/`               | **list** of guideline documents        |
+| `GET /api/audits/prescription/<id>`   | **list** of audit documents            |
+
+```python
+# Correct pattern for list-returning endpoints:
+metrics = data if isinstance(data, list) else data.get("quality_metrics", [])
+```
+
+### Session state keys set at login
+
+| Key              | Value                                          |
+|------------------|------------------------------------------------|
+| `token`          | JWT string — sent as `Authorization: Bearer`   |
+| `user_id`        | MongoDB `_id` of the logged-in user (string)   |
+| `user_name`      | Display name                                   |
+| `user_email`     | Email address                                  |
+| `backend_role`   | `"doctor"` / `"admin"` / `"hospital_staff"`    |
+| `role`           | `"Doctor"` / `"Admin"` (frontend routing role) |
+
+### Field name reference for UI components
 
 | UI label               | API field              | Collection       |
 |------------------------|------------------------|------------------|
