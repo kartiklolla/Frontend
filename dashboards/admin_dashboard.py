@@ -2,6 +2,13 @@
 import streamlit as st
 from components.sidebar import sidebar
 from components.charts import patient_line_chart, appointment_donut_chart
+import sys, os
+
+# Import Prescription Audit module
+if os.path.join(os.path.dirname(__file__), "..") not in sys.path:
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
+from src.modules.module_24_prescription_audit.frontend.prescription_audit_main import prescription_audit_module
 
 def admin_dashboard():
     # ---------- Session Defaults ----------
@@ -15,12 +22,21 @@ def admin_dashboard():
         "Patients",
         "Reports",
         "Doctors",
+        "Prescription Audit",
         "Features",
         "Forms, Tables & Charts",
         "Apps & Widgets",
         "Authentication",
         "Miscellaneous"
     ])
+
+    # ---------- Prescription Audit Module ----------
+    if category == "Prescription Audit":
+        st.session_state.view = "prescription_audit"
+
+    if st.session_state.view == "prescription_audit":
+        prescription_audit_module()
+        return
 
     # ---------- Admin Dashboard ----------
     st.markdown("## 🏥 Admin Dashboard")

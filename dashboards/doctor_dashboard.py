@@ -3,6 +3,14 @@ import streamlit as st
 from components.sidebar import sidebar
 from components.charts import patient_line_chart, appointment_donut_chart
 import matplotlib.pyplot as plt
+import sys, os
+
+# Make the prescription audit frontend importable
+_PA_FRONTEND = os.path.join(os.path.dirname(__file__), "..", "src", "modules", "module_24_prescription_audit", "frontend")
+if _PA_FRONTEND not in sys.path:
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
+from src.modules.module_24_prescription_audit.frontend.prescription_audit_main import prescription_audit_module
 
 # All categories and their modules
 CATEGORIES = {
@@ -142,8 +150,14 @@ def doctor_dashboard():
         "F - HR & Staff Management",
         "G - Compliance & Security",
         "H - Supply Chain",
-        "I - Analytics & Reporting"
+        "I - Analytics & Reporting",
+        "Prescription Audit"
     ])
+
+    # Direct sidebar nav to Prescription Audit module
+    if selected == "Prescription Audit":
+        st.session_state.view = "prescription_audit"
+        st.session_state.pa_view = st.session_state.get("pa_view", "dashboard")
 
     # Only change view if a category is explicitly selected AND it's not "Dashboard"
     if selected != "Dashboard" and selected in CATEGORIES and st.session_state.view == "main":
@@ -151,7 +165,9 @@ def doctor_dashboard():
         pass
 
     # ROUTER
-    if st.session_state.view == "category":
+    if st.session_state.view == "prescription_audit":
+        prescription_audit_module()
+    elif st.session_state.view == "category":
         show_category_view()
     elif st.session_state.view == "module":
         show_module_detail()
@@ -354,6 +370,12 @@ def show_category_view():
 def show_module_detail():
     code, name, desc, tables, records = st.session_state.selected_module
     cat_key = st.session_state.selected_category
+
+    # C6 → Automated Prescription Audit → real module
+    if code == "C6":
+        st.session_state.view = "prescription_audit"
+        st.session_state.pa_view = "dashboard"
+        st.rerun()
     
     # Breadcrumb
     st.markdown(f"Category {cat_key.split('-')[0].strip()} > {name}")
