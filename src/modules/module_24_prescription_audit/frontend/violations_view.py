@@ -4,7 +4,7 @@ Violations Summary View — aggregated statistics and charts
 
 import streamlit as st
 import matplotlib.pyplot as plt
-from . import api_client
+import api_client
 
 
 def violations_view_page():

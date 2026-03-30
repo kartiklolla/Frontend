@@ -3,7 +3,7 @@ Prescriptions List and Detail View
 """
 
 import streamlit as st
-from . import api_client
+import api_client
 
 
 def prescriptions_list_page():

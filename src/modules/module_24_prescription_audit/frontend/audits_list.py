@@ -3,7 +3,7 @@ Audits List — paginated list of all audits for the logged-in doctor or all doc
 """
 
 import streamlit as st
-from . import api_client
+import api_client
 
 
 def audits_list_page():
