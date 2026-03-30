@@ -4,7 +4,7 @@ Audit Detail View — shows full audit report with scores, violations, improveme
 
 import streamlit as st
 import matplotlib.pyplot as plt
-from . import api_client
+import api_client
 
 
 def audit_detail_page():

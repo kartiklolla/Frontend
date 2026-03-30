@@ -3,7 +3,7 @@ Improvements View — list and update improvement suggestion statuses
 """
 
 import streamlit as st
-from . import api_client
+import api_client
 
 
 def improvements_view_page():

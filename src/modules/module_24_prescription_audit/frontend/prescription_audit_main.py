@@ -19,16 +19,16 @@ Views (controlled via st.session_state.pa_view):
 import streamlit as st
 import matplotlib.pyplot as plt
 
-from .prescription_form import prescription_form_page
-from .prescriptions_list import prescriptions_list_page, prescription_detail_page
-from .audits_list import audits_list_page
-from .audit_detail import audit_detail_page
-from .violations_view import violations_view_page
-from .improvements_view import improvements_view_page
-from .quality_metrics_view import quality_metrics_view_page
-from .reports_view import reports_view_page
-from .guidelines_view import guidelines_view_page
-from . import api_client
+from prescription_form import prescription_form_page
+from prescriptions_list import prescriptions_list_page, prescription_detail_page
+from audits_list import audits_list_page
+from audit_detail import audit_detail_page
+from violations_view import violations_view_page
+from improvements_view import improvements_view_page
+from quality_metrics_view import quality_metrics_view_page
+from reports_view import reports_view_page
+from guidelines_view import guidelines_view_page
+import api_client
 
 
 # Navigation label → pa_view key
@@ -241,3 +241,6 @@ def _dashboard_view():
                         st.rerun()
         else:
             st.info("No audit records yet. Start by adding a prescription.")
+
+if __name__ == "__main__":
+    prescription_audit_module()

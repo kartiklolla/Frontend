@@ -4,7 +4,7 @@ Quality Metrics View — compliance scores, trends, and monthly summaries
 
 import streamlit as st
 import matplotlib.pyplot as plt
-from . import api_client
+import api_client
 
 
 def quality_metrics_view_page():

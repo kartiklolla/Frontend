@@ -4,7 +4,7 @@ Reports View — statistical analysis, doctor rankings, trend detection
 
 import streamlit as st
 import matplotlib.pyplot as plt
-from . import api_client
+import api_client
 
 
 def reports_view_page():
