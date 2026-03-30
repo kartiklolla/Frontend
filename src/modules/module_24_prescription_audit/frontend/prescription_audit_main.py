@@ -30,6 +30,30 @@ from reports_view import reports_view_page
 from guidelines_view import guidelines_view_page
 import api_client
 
+st.markdown("""
+<style>
+section[data-testid="stSidebar"] {
+    background-color: #020617;
+    color: #cbd5f5;
+}
+
+/* Remove ugly button look */
+section[data-testid="stSidebar"] button {
+    background: none;
+    border: none;
+    text-align: left;
+    color: #cbd5f5;
+    font-size: 15px;
+    padding: 8px;
+}
+
+/* Hover effect */
+section[data-testid="stSidebar"] button:hover {
+    background-color: #1c2b3a;
+    border-radius: 8px;
+}
+</style>
+""", unsafe_allow_html=True)
 
 # Navigation label → pa_view key
 NAV_ITEMS = {
@@ -58,41 +82,82 @@ def prescription_audit_module():
     st.divider()
     _route()
 
-
 def _render_module_header():
-    col1, col2 = st.columns([4, 1])
-    with col1:
-        st.markdown("# 💊 Prescription Audit System")
-        st.caption("Automated prescription quality assessment — Module C6 / Module 24")
-    with col2:
-        # Backend health indicator
-        _, hstatus = api_client.health_check()
-        if hstatus == 200:
-            st.success("Backend ✅")
-        else:
-            st.error("Backend ❌ (port 5000)")
+    col1, col2 = st.columns([6, 2])
 
+    with col1:
+        st.markdown("""
+        <div style="line-height:1.3;">
+            <h2 style="margin-bottom:4px;">💊 Prescription Audit System</h2>
+            <p style="color:#94a3b8; font-size:14px;">
+                Automated prescription quality assessment
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with col2:
+        _, hstatus = api_client.health_check()
+
+        if hstatus == 200:
+            st.markdown("""
+            <div style="
+                background:#14532d;
+                padding:8px 12px;
+                border-radius:8px;
+                text-align:center;
+                color:white;
+                font-size:14px;
+            ">
+            Backend ✅
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.markdown("""
+            <div style="
+                background:#7f1d1d;
+                padding:8px 12px;
+                border-radius:8px;
+                text-align:center;
+                color:white;
+                font-size:14px;
+            ">
+            Backend ❌
+            </div>
+            """, unsafe_allow_html=True)
 
 def _render_module_nav():
     backend_role = st.session_state.get("backend_role", "doctor")
-    nav_labels = list(NAV_ITEMS.keys())
+
+    nav_items = NAV_ITEMS.copy()
     if backend_role not in ("admin",):
-        nav_labels = [n for n in nav_labels if n != "Guidelines"]
+        nav_items.pop("Guidelines", None)
 
     current_view = st.session_state.get("pa_view", "dashboard")
-    # Map current view back to label for default selection
-    view_to_label = {v: k for k, v in NAV_ITEMS.items()}
-    current_label = view_to_label.get(current_view, "Dashboard")
 
-    cols = st.columns(len(nav_labels))
-    for col, label in zip(cols, nav_labels):
-        is_active = (label == current_label)
-        btn_type = "primary" if is_active else "secondary"
-        with col:
-            if st.button(label, use_container_width=True, type=btn_type, key=f"pa_nav_{label}"):
-                st.session_state.pa_view = NAV_ITEMS[label]
+    st.sidebar.markdown("## 💊 Audit System")
+
+    for label, view in nav_items.items():
+        is_active = (view == current_view)
+
+        if is_active:
+            st.sidebar.markdown(
+                f"""
+                <div style="
+                    background-color:#1c2b3a;
+                    padding:10px;
+                    border-radius:8px;
+                    margin-bottom:5px;
+                    font-weight:600;
+                ">
+                {label}
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+        else:
+            if st.sidebar.button(label, use_container_width=True):
+                st.session_state.pa_view = view
                 st.rerun()
-
 
 def _route():
     view = st.session_state.get("pa_view", "dashboard")
