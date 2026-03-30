@@ -74,7 +74,8 @@ def reports_view_page():
         if status != 200:
             st.error(data.get("message", "Failed to load doctor rankings."))
         else:
-            rankings = data.get("rankings", data if isinstance(data, list) else [])
+            rankings = data if isinstance(data, list) else data.get("rankings", [])
+
             if rankings:
                 rows = []
                 for rank, doc in enumerate(rankings, 1):
@@ -85,9 +86,9 @@ def reports_view_page():
                         "Prescriptions": doc.get("total_prescriptions", 0),
                         "Pass Rate": f"{doc.get('pass_rate', 0):.1f}%",
                     })
+
                 st.table(rows)
 
-                # Bar chart of rankings
                 if len(rankings) > 1:
                     fig, ax = plt.subplots(figsize=(7, 3))
                     ids = [f"Dr.{i+1}" for i in range(len(rankings))]
